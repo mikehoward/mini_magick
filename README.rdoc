@@ -117,3 +117,13 @@ And you are sorted.
 == Requirements
 
 You must have ImageMagick or GraphicsMagick installed.
+
+== If you have Problems
+
+  Remember: MiniMagick works by building ImageMagic (or GraphicsMagick) shell commands.
+  So, make sure what you want to do works using the shell commands before complaining about
+  MiniMagick.
+  
+  Also: MiniMagick has a number of convenience functions for building commands. You can always
+  build your shell command using a raw CommandBuilder instance and pushing your command
+  strings into the builder (see comments in the code for a sketch of how to do this)

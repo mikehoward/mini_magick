@@ -36,7 +36,21 @@ module MiniMagick
 
   MOGRIFY_COMMANDS = %w{adaptive-blur adaptive-resize adaptive-sharpen adjoin affine alpha annotate antialias append authenticate auto-gamma auto-level auto-orient background bench iterations bias black-threshold blue-primary point blue-shift factor blur border bordercolor brightness-contrast caption string cdl filename channel type charcoal radius chop clip clamp clip-mask filename clip-path id clone index clut contrast-stretch coalesce colorize color-matrix colors colorspace type combine comment string compose operator composite compress type contrast convolve coefficients crop cycle amount decipher filename debug events define format:option deconstruct delay delete index density depth despeckle direction type dissolve display server dispose method distort type coefficients dither method draw string edge radius emboss radius encipher filename encoding type endian type enhance equalize evaluate operator evaluate-sequence operator extent extract family name fft fill filter type flatten flip floodfill flop font name format string frame function name fuzz distance fx expression gamma gaussian-blur geometry gravity type green-primary point help identify ifft implode amount insert index intent type interlace type interline-spacing interpolate method interword-spacing kerning label string lat layers method level limit type linear-stretch liquid-rescale log format loop iterations mask filename mattecolor median radius modulate monitor monochrome morph morphology method kernel motion-blur negate noise radius normalize opaque ordered-dither NxN orient type page paint radius ping pointsize polaroid angle posterize levels precision preview type print string process image-filter profile filename quality quantize quiet radial-blur angle raise random-threshold low,high red-primary point regard-warnings region remap filename render repage resample resize respect-parentheses roll rotate degrees sample sampling-factor scale scene seed segments selective-blur separate sepia-tone threshold set attribute shade degrees shadow sharpen shave shear sigmoidal-contrast size sketch solarize threshold splice spread radius strip stroke strokewidth stretch type style type swap indexes swirl degrees texture filename threshold thumbnail tile filename tile-offset tint transform transparent transparent-color transpose transverse treedepth trim type type undercolor unique-colors units type unsharp verbose version view vignette virtual-pixel method wave weight type white-point point white-threshold write filename}
 
-  IMAGE_CREATION_OPERATORS = %w{canvas caption gradient label logo pattern plasma radial radient rose text tile xc }
+  # NOTE: this is a convenience function. All of these operators can be used by directly using
+  # the command builder and encoding them directly:
+  #   some_tempfile = Tempfile.new( [a-name, '.jpeg'])
+  #   command = MiniMagick::ComandBuilder.new("composite")   # create a composite command
+  #   command.push <image path>        # tell composite where to find the orginal image
+  #   command.size "1024x1582"         # resize it
+  #   command.push "canvas:black"      # set the canvas color (an image operator)
+  #    ... etc ...
+  #   command.push(some_tempfile.path)  # set output path
+  #   some_image_obj.run(command)       # execute commands
+  #   return MiniMagick::Image.new(some_tempfile.path, some_tempfile) # see comments for Image#initialize
+  #
+  # see http://www.imagemagick.org/Usage/basics/#option_ops for some info on image creation operators
+  # these operators are omitted because they get picked up as dash options: caption, label, tile
+  IMAGE_CREATION_OPERATORS = %w{canvas gradient logo pattern plasma radial-gradient rose text xc }
 
   class Error < RuntimeError; end
   class Invalid < StandardError; end
@@ -491,13 +505,15 @@ module MiniMagick
     end
 
     def add_creation_operator(command, *options)
-      creation_command = command
+      creation_command_ar = []
       if options.any?
         options.each do |option|
-          creation_command << ":#{option}"
+          # enclose in single quotes if contains internal white space
+          option = "'" + option.strip + "'" if option.strip =~ /\s/
+          creation_command_ar << option.strip
         end
       end
-      push creation_command
+      push command + ':' + creation_command_ar.join(':')
     end
 
     def push(arg)

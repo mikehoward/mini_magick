@@ -39,9 +39,59 @@ class CommandBuilderTest < Test::Unit::TestCase
     assert_equal "-auto-orient", c.args.join(" ")
   end
   
+  # see http://www.imagemagick.org/Usage/basics/#option_ops for image creation operators
+  # canvas caption gradient label logo pattern plasma radial radient rose text tile xc
   def test_canvas
     c = CommandBuilder.new('test')
     c.canvas 'black'
     assert_equal "canvas:black", c.args.join
   end
-end
+  
+  def test_gradient
+    c = CommandBuilder.new('test')
+    c.gradient 'red-green'
+    assert_equal 'gradient:red-green', c.args.join
+  end
+
+  def TEST_Logo
+     c = CommandBuilder.new('test')
+     c.logo
+     assert_equal "logo:", c.args.join
+   end
+  
+   def test_pattern
+     c = CommandBuilder.new('test')
+     c.pattern "checkerboard"
+     assert_equal "pattern:checkerboard", c.args.join
+   end
+  
+   def test_plasma
+     c = CommandBuilder.new('test')
+     c.plasma
+     assert_equal "plasma:", c.args.join
+   end
+   
+   def test_radial_gradient
+     c = CommandBuilder.new('test')
+     c.radial_gradient 'red-green'
+     assert_equal "radial-gradient:red-green", c.args.join
+   end
+   
+   def test_rose
+     c = CommandBuilder.new('test')
+     c.rose
+     assert_equal "rose:", c.args.join
+   end
+   
+   def test_text
+     c = CommandBuilder.new('test')
+     c.text "some text"
+     assert_equal "text:'some text'", c.args.join
+   end
+   
+   def test_xc
+     c = CommandBuilder.new('test')
+     c.xc 'gray'
+     assert_equal "xc:gray", c.args.join
+   end
+ end
